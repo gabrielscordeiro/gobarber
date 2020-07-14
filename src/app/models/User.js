@@ -22,6 +22,10 @@ class User extends Model {
 
     return this;//sempre retorna o model que acabou de ser inicializado
   }
+
+  checkPassword(password) {
+    return Bcrypt.compare(password, this.password_hash)
+  }
 }
 
 export default User;
