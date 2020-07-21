@@ -1,8 +1,10 @@
-import { startOfHour, parseISO, isBefore } from 'date-fns';
+import { startOfHour, parseISO, isBefore, format } from 'date-fns';
+import pt from 'date-fns/locale/pt';
 import User from '../models/User';
 import File from '../models/File';
 import Appointment from '../models/Appointment';
 import * as Yup from 'yup';
+import Notification from '../schemas/Notification';
 
 class AppointmentController {
 
@@ -49,6 +51,7 @@ class AppointmentController {
      * verifica que se o provider_id é um provedor de serviços
      */
 
+
     const isProvider = await User.findOne({
       where: {
         id: provider_id,
@@ -60,6 +63,11 @@ class AppointmentController {
       return res.status(401).json({
         error: 'You can only create appointments with providers'
       });
+    }
+
+
+    if (provider_id == req.userId) {
+      return res.status(401).json({ error: 'Provider cannot schedule services for himself' })
     }
 
     //parseIso transforma a string de data em um objeto date do JS
@@ -83,10 +91,23 @@ class AppointmentController {
       return res.status(400).json({ error: 'Appointment date is not available!' })
     }
 
+
     const appointment = await Appointment.create({
       user_id: req.userId,
       provider_id,
       date
+    });
+
+    /**
+     * Notificar prestador de serviço
+     */
+
+    const user = await User.findByPk(req.userId);
+    const formattedDate = format(hourStart, "'dia' dd 'de' MMMM', às' H:mm'h'", { locale: pt });
+
+    await Notification.create({
+      content: `Novo agendamento de ${user.name} para ${formattedDate}`,
+      user: provider_id
     });
 
     return res.status(200).json(appointment);
