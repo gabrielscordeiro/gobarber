@@ -1,10 +1,12 @@
+require('dotenv/config')
+
 module.exports = {
   dialect: 'postgres',
-  host: 'localhost',
-  username: 'postgres',
-  password: 123456,
-  database: 'gobarber',
-  port: 5433,//criado em outra porta pois já tenho outro serviço rodando na 5432
+  host: process.env.DB_HOST,
+  username: process.env.DB_USER,
+  password: process.env.DB_PASS,
+  database: process.env.DB_NAME,
+  port: process.env.DB_PORT,//criado em outra porta pois já tenho outro serviço rodando na 5432
   omitNull: true,
   define: {
     timestamps: true,
